@@ -1,0 +1,16 @@
+name = "DFire"
+
+[classes]
+0 = "fire"
+1 = "smoke"
+
+[paths]
+train = "train"
+val = "val"
+test = "test"
+images = "images"
+labels = "labels"
+
+[balancing]
+strategy = "oversample_manifest"
+seed = 42

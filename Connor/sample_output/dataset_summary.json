@@ -1,0 +1,99 @@
+{
+  "balancing": {
+    "category_counts": {
+      "fire_and_smoke": 1,
+      "fire_only": 2,
+      "none": 2,
+      "other": 1,
+      "smoke_only": 1
+    },
+    "manifest_entries": 10,
+    "original_samples": 7,
+    "seed": 42,
+    "strategy": "oversample_manifest"
+  },
+  "dataset": "DFire",
+  "dataset_root": "C:\\dfire\\sample_data\\generated_dataset",
+  "splits": {
+    "test": {
+      "boxes_by_class": {},
+      "categories": {
+        "fire_and_smoke": 0,
+        "fire_only": 0,
+        "none": 1,
+        "other": 0,
+        "smoke_only": 0
+      },
+      "total_bounding_boxes": 0,
+      "total_images": 1,
+      "total_labels": 2,
+      "validation": {
+        "details": [
+          "test: 1 label(s) missing images"
+        ],
+        "empty_labels": 1,
+        "images_missing_labels": 0,
+        "invalid_coordinates": 0,
+        "labels_missing_images": 1,
+        "malformed_rows": 0,
+        "unknown_class_ids": 0
+      }
+    },
+    "train": {
+      "boxes_by_class": {
+        "0": 3,
+        "1": 2,
+        "9": 1
+      },
+      "categories": {
+        "fire_and_smoke": 1,
+        "fire_only": 2,
+        "none": 2,
+        "other": 1,
+        "smoke_only": 1
+      },
+      "total_bounding_boxes": 6,
+      "total_images": 7,
+      "total_labels": 6,
+      "validation": {
+        "details": [
+          "train: 1 image(s) missing labels",
+          "sample_data\\generated_dataset\\train\\labels\\bad.txt:1: expected 5 fields",
+          "sample_data\\generated_dataset\\train\\labels\\bad.txt:2: invalid normalized coordinates",
+          "sample_data\\generated_dataset\\train\\labels\\unknown.txt:1: unknown class 9"
+        ],
+        "empty_labels": 1,
+        "images_missing_labels": 1,
+        "invalid_coordinates": 1,
+        "labels_missing_images": 0,
+        "malformed_rows": 1,
+        "unknown_class_ids": 1
+      }
+    },
+    "val": {
+      "boxes_by_class": {
+        "0": 1
+      },
+      "categories": {
+        "fire_and_smoke": 0,
+        "fire_only": 1,
+        "none": 0,
+        "other": 0,
+        "smoke_only": 0
+      },
+      "total_bounding_boxes": 1,
+      "total_images": 1,
+      "total_labels": 1,
+      "validation": {
+        "details": [],
+        "empty_labels": 0,
+        "images_missing_labels": 0,
+        "invalid_coordinates": 0,
+        "labels_missing_images": 0,
+        "malformed_rows": 0,
+        "unknown_class_ids": 0
+      }
+    }
+  },
+  "status": "PASS WITH WARNINGS"
+}
