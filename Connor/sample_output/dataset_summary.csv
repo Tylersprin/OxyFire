@@ -1,4 +1,0 @@
-split,total_images,total_labels,total_bounding_boxes,empty_background_images,malformed_rows,unknown_class_ids,invalid_coordinates,images_missing_labels,labels_missing_images
-train,7,6,6,2,1,1,1,1,0
-val,1,1,1,0,0,0,0,0,0
-test,1,2,0,1,0,0,0,0,1
