@@ -10,16 +10,18 @@
 
 set -euo pipefail
 
-if [[ $# -ne 3 ]]; then
-  echo "Usage: sbatch jobs/run_dfire_analysis.sbatch DATASET_ROOT CONFIG_PATH OUTPUT_DIR" >&2
+if [[ $# -ne 0 && $# -ne 3 ]]; then
+  echo "Usage: sbatch jobs/run_dfire_analysis.sbatch [DATASET_ROOT CONFIG_PATH OUTPUT_DIR]" >&2
   exit 2
 fi
 
 REPO_ROOT="${REPO_ROOT:-$HOME/dataset_pipeline/Connor}"
-DATASET_ROOT="$1"
-CONFIG_PATH="$2"
-OUTPUT_DIR="$3"
+DATASET_ROOT="${1:-/scratch/user/$USER/DFire/dataset/data}"
+CONFIG_PATH="${2:-$REPO_ROOT/configs/dfire.toml}"
+OUTPUT_DIR="${3:-/scratch/user/$USER/DFire_Analysis}"
 PROGRESS_EVERY="${PROGRESS_EVERY:-1000}"
+echo "Starting D-Fire job ${SLURM_JOB_ID:-unknown} at $(date)"
+echo "Loading Grace Python modules..."
 
 if [[ "$CONFIG_PATH" != /* ]]; then
   CONFIG_PATH="$REPO_ROOT/$CONFIG_PATH"
@@ -77,7 +79,7 @@ echo "Training label count: $(find "$DATASET_ROOT/train/labels" -type f -name '*
 echo "Starting analyzer: $(date)"
 
 set +e
-"$PYTHON_BIN" "$REPO_ROOT/scripts/analyze_and_balance.py" \
+"$PYTHON_BIN" -u "$REPO_ROOT/scripts/analyze_and_balance.py" \
   --dataset-root "$DATASET_ROOT" \
   --config "$CONFIG_PATH" \
   --output-dir "$OUTPUT_DIR" \
@@ -86,6 +88,9 @@ STATUS=$?
 set -e
 
 echo "Analyzer exit code: $STATUS"
+if [[ "$STATUS" -eq 0 ]]; then
+  cat "$OUTPUT_DIR/analysis_summary.txt"
+fi
 echo "Finished: $(date)"
 echo "Generated files:"
 find "$OUTPUT_DIR" -maxdepth 1 -type f -printf '  %f\n' 2>/dev/null | sort || true
