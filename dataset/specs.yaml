@@ -1,0 +1,6 @@
+path: /scratch/user/tylersprin/dataset
+train: train/images
+val: val/images
+
+nc: 3
+names: [Fire&Smoke, NoFire&Smoke, Both]
