@@ -1,11 +1,22 @@
 # D-Fire local prototype
+# TO TEST/RUN must have Dfire dataset installed
+# DFire: https://github.coem/gaia-solutions-on-demand/DFireDataset
+
+
+Folder structure is
+dfire
+|_
+| data/Dfire (dfire data source)
+|_
+    OxyFire (the github repo)
+
 
 Once installed, double-click `run_report.cmd` to process the whole dataset and open the report.
 
 Run from PowerShell:
 
 ```powershell
-cd C:\dfire\OxyFire
+cd C:\dfire\OxyFire #(This may be different if you are starting in the OxyFire folder)
 python -m pip install -r requirements.txt
 python analyze_dfire.py
 Start-Process report\report.html
