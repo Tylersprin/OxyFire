@@ -221,3 +221,64 @@ Submit GPU job:
 ```bash
 sbatch dl.slurm
 ```
+
+## tamubatch Utility Detailed Guide
+
+`tamubatch` is an automated job submission tool on Grace that simplifies submitting Slurm jobs without manually writing `#SBATCH` header directives. Users supply a standard script file containing executable commands, and `tamubatch` automatically formats and submits the batch job using either default parameters or user-specified flags.
+
+### Command Synopsis & Options
+
+```bash
+tamubatch [JOB_FILE] [OPTIONS]
+```
+
+| Flag | Short | Parameter | Description | Default |
+| :--- | :--- | :--- | :--- | :--- |
+| `--walltime` | `-W` | `<H:MM>` | Sets job walltime limit | `0:30` (30 minutes) |
+| `--GPU` | `-gpu` | None | Directs job to run on GPU nodes | Disabled |
+| `--cores` | `-n` | `<n>` | Total number of CPU cores requested | `1` core |
+| `--cores-per-node` | `-R` | `<n>` | Cores per node (Max 48 per node on Grace) | Same as `-n` (up to 48) |
+| `--total-memory` | `-M` | `<n>MB/G` | Total memory limit (must specify `MB` or `G`) | $4000\text{ MB} \times \text{cores}$ |
+| `--project-account` | `-P` | `<Account>` | Specifies SU allocation account to charge | Default user account |
+| `--extras` | `-x` | `"<flags>"` | Passes additional Slurm flags | None |
+| `--command` | `-command` | `"<bash>"` | Appends bash commands to job file before running | None |
+| `--download` | `-download` | None | Generates script file without submitting job | Off (submits directly) |
+| `--help` | `-h` | None | Displays usage documentation and exits | N/A |
+
+### Batch File Format
+
+The input script is a standard text/bash script containing the commands you need executed on the cluster:
+
+```bash
+#!/bin/bash
+
+echo "Hello"
+ml purge
+./my_script
+```
+
+### Usage Examples
+
+#### 1. Default Job Submission
+Submits `my_job_file` with default limits (1 core, 30 min walltime, 4 GB memory):
+```bash
+tamubatch my_job_file
+```
+
+#### 2. Custom Resources (Time, CPU Cores, Memory)
+Submits a job requesting 1 hour walltime, 20 CPU cores on 1 node, and 50 GB total memory:
+```bash
+tamubatch my_job_file -W 1:00 -n 20 -R 20 -M 50G
+```
+
+#### 3. GPU Job with Extra Slurm Parameters
+Requests a GPU node, 5 hours walltime, 40 cores (20 cores/node), 80 GB RAM, and attaches Slurm email notifications via the `-x` flag:
+```bash
+tamubatch my_job_file -gpu -W 5:00 -n 40 -R 20 -M 80G -x "--mail-type=ALL --mail-user=NetID@tamu.edu"
+```
+
+#### 4. Appending Inline Commands (Rapid Prototyping)
+Appends inline bash commands to the end of `my_job_file` prior to submission:
+```bash
+tamubatch my_job_file -W 1:00 -n 20 -R 20 -M 50G -command "echo hello; cd /user/net-id/"
+```
