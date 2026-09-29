@@ -1,0 +1,22 @@
+{
+  "dataset": "C:\\dfire\\data\\DFire",
+  "total_images": 21527,
+  "valid_images": 21527,
+  "invalid_images": 0,
+  "boxes": 26557,
+  "issues": 347,
+  "categories": {
+    "none": 9838,
+    "smoke": 5867,
+    "fire + smoke": 4658,
+    "fire": 1164
+  },
+  "boxes_by_class": {
+    "smoke": 11865,
+    "fire": 14692
+  },
+  "size_thresholds_area_pct": {
+    "small_below": 1,
+    "large_at_least": 10
+  }
+}

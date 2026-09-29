@@ -1,0 +1,61 @@
+﻿split,category,fire_size,smoke_size,images
+ALL,fire,large,none,248
+ALL,fire,medium,none,362
+ALL,fire,small,none,554
+ALL,fire + smoke,large,large,514
+ALL,fire + smoke,large,medium,28
+ALL,fire + smoke,medium,large,1899
+ALL,fire + smoke,medium,medium,298
+ALL,fire + smoke,medium,small,8
+ALL,fire + smoke,small,large,1211
+ALL,fire + smoke,small,medium,558
+ALL,fire + smoke,small,small,142
+ALL,none,none,none,9838
+ALL,smoke,none,large,2784
+ALL,smoke,none,medium,1325
+ALL,smoke,none,small,1758
+test,fire,large,none,39
+test,fire,medium,none,66
+test,fire,small,none,115
+test,fire + smoke,large,large,113
+test,fire + smoke,large,medium,7
+test,fire + smoke,medium,large,355
+test,fire + smoke,medium,medium,55
+test,fire + smoke,medium,small,1
+test,fire + smoke,small,large,235
+test,fire + smoke,small,medium,102
+test,fire + smoke,small,small,27
+test,none,none,none,2005
+test,smoke,none,large,538
+test,smoke,none,medium,270
+test,smoke,none,small,378
+train,fire,large,none,168
+train,fire,medium,none,232
+train,fire,small,none,370
+train,fire + smoke,large,large,331
+train,fire + smoke,large,medium,14
+train,fire + smoke,medium,large,1262
+train,fire + smoke,medium,medium,193
+train,fire + smoke,medium,small,3
+train,fire + smoke,small,large,801
+train,fire + smoke,small,medium,363
+train,fire + smoke,small,small,91
+train,none,none,none,6458
+train,smoke,none,large,1807
+train,smoke,none,medium,870
+train,smoke,none,small,1159
+val,fire,large,none,41
+val,fire,medium,none,64
+val,fire,small,none,69
+val,fire + smoke,large,large,70
+val,fire + smoke,large,medium,7
+val,fire + smoke,medium,large,282
+val,fire + smoke,medium,medium,50
+val,fire + smoke,medium,small,4
+val,fire + smoke,small,large,175
+val,fire + smoke,small,medium,93
+val,fire + smoke,small,small,24
+val,none,none,none,1375
+val,smoke,none,large,439
+val,smoke,none,medium,185
+val,smoke,none,small,221

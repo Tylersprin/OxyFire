@@ -1,0 +1,17 @@
+﻿split,category,images,percent
+ALL,fire,1164,5.41
+ALL,fire + smoke,4658,21.64
+ALL,smoke,5867,27.25
+ALL,none,9838,45.7
+test,fire,220,5.11
+test,fire + smoke,895,20.78
+test,smoke,1186,27.54
+test,none,2005,46.56
+train,fire,770,5.45
+train,fire + smoke,3058,21.65
+train,smoke,3836,27.16
+train,none,6458,45.73
+val,fire,174,5.61
+val,fire + smoke,705,22.75
+val,smoke,845,27.27
+val,none,1375,44.37
