@@ -196,6 +196,11 @@ def analyze_split(
             key=lambda path: path.relative_to(labels_root).as_posix().lower(),
         )
 
+    print(
+        f"Scanning {split_name}: {len(result.images)} images, {len(result.labels)} label files...",
+        flush=True,
+    )
+
     image_keys = {_relative_key(path, images_root) for path in result.images}
     label_keys = {path.relative_to(labels_root).as_posix() for path in result.labels} if labels_root.is_dir() else set()
     result.issues.images_missing_labels = len(image_keys - label_keys)
@@ -225,8 +230,10 @@ def analyze_split(
             result.total_boxes += row_count
             result.boxes_by_class.update(box_counts)
         result.categories[category] += 1
-        if progress_every and index % progress_every == 0:
+        if progress_every and (index % progress_every == 0 or index == len(result.images)):
             print(f"Analyzed {index} / {len(result.images)} {split_name} images...", flush=True)
+    if not result.images:
+        print(f"Analyzed 0 / 0 {split_name} images...", flush=True)
     return result
 
 

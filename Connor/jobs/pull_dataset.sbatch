@@ -2,6 +2,7 @@
 #SBATCH --job-name=pull_dataset
 #SBATCH --time=00:15:00
 #SBATCH --mem=1G
+#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 
 set -euo pipefail
@@ -11,8 +12,15 @@ if [[ $# -lt 3 || $# -gt 4 ]]; then
   exit 2
 fi
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+SUBMIT_DIR="${SLURM_SUBMIT_DIR:-$PWD}"
+if [[ -f "$SUBMIT_DIR/scripts/pull_dataset.sh" ]]; then
+  REPO_ROOT="$SUBMIT_DIR"
+elif [[ -f "$SUBMIT_DIR/../scripts/pull_dataset.sh" ]]; then
+  REPO_ROOT="$(cd -- "$SUBMIT_DIR/.." && pwd)"
+else
+  SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+  REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+fi
 echo "SLURM job ID: ${SLURM_JOB_ID:-not-under-slurm}"
 echo "Hostname: $(hostname)"
 if [[ $# -eq 4 && "$4" != "--force" ]]; then
