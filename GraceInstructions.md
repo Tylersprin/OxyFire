@@ -75,28 +75,28 @@ myproject
 
 Software on Grace is managed through hierarchical environment modules.
 
-Finding Software
+### Finding Software
 
 Command-line options for finding available software on our clusters include:
 
-module avail: Lists modules available to load based on currently loaded dependencies.
+* `module avail`: Lists modules available to load based on currently loaded dependencies.
+* `module spider`: Searches all module pathways for a specific keyword or package (most up-to-date).
+* `fmq`: Fast Module Query — a faster alternative to `module spider`.
+* `mla`: Lists/searches software installed as modules across HPRC clusters.
 
-module spider: Searches all module pathways for a specific keyword or package (most up-to-date).
+> **Note:** The `fmq` command is a fast alternative to `module spider`, but `module spider` will have the most up-to-date module information.
 
-fmq: Fast Module Query — a faster alternative to module spider.
+#### Examples Using `fmq`
 
-mla: Lists/searches software installed as modules across HPRC clusters.
-
-Note: The fmq command is a fast alternative to module spider, but module spider will have the most up-to-date module information.
-
-Examples Using fmq
-
+```bash
 # Search for available Python modules
 fmq Python
 
 # Query information about a specific module version
 fmq Python/3.8.2-GCCcore-9.3.0
+```
 
+#### Common Module Commands
 
 ```bash
 # Search for software across all installed modules
