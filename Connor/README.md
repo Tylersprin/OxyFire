@@ -41,7 +41,7 @@ python3 scripts/analyze_and_balance.py \
 python3 -m unittest discover -s tests -v
 ```
 
-The analyzer writes `analysis_summary.txt`, `dataset_summary.csv`, `category_summary.csv`, `class_summary.csv`, `validation_report.txt`, `balanced_train.txt`, and `dataset_summary.json`.
+The analyzer writes `analysis_summary.txt`, `dataset_summary.csv`, `category_summary.csv`, `class_summary.csv`, `size_summary.csv`, `validation_report.txt`, `balanced_train.txt`, and `dataset_summary.json`. `size_summary.csv` reports normalized bounding-box width, height, and area statistics by split and class; it does not require opening image pixels.
 
 ## Grace usage
 

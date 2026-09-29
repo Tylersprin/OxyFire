@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=dfire_analysis
-#SBATCH --time=00:15:00
+#SBATCH --time=01:00:00
 #SBATCH --mem=4G
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2

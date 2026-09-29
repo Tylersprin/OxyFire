@@ -12,6 +12,7 @@ import csv
 import json
 import math
 import random
+import statistics
 import sys
 import tomllib
 from collections import Counter
@@ -55,7 +56,10 @@ class SplitAnalysis:
     images: list[Path] = field(default_factory=list)
     labels: list[Path] = field(default_factory=list)
     categories: Counter = field(default_factory=Counter)
+    category_by_image: dict[Path, str] = field(default_factory=dict)
     boxes_by_class: Counter = field(default_factory=Counter)
+    # Each tuple is normalized (width, height, area) for one valid box.
+    box_sizes_by_class: dict[int, list[tuple[float, float, float]]] = field(default_factory=dict)
     total_boxes: int = 0
     issues: ValidationIssues = field(default_factory=ValidationIssues)
 
@@ -124,21 +128,22 @@ def _parse_label_file(
     known_classes: set[int],
     issues: ValidationIssues,
     split_name: str,
-) -> tuple[set[int], int, Counter, bool]:
+) -> tuple[set[int], int, Counter, bool, list[tuple[int, float, float, float, float]]]:
     try:
         text = label_path.read_text(encoding="utf-8", errors="replace")
     except OSError as exc:
         _record_detail(issues, f"{split_name}: could not read {label_path}: {exc}")
         issues.malformed_rows += 1
-        return set(), 0, Counter(), True
+        return set(), 0, Counter(), True, []
 
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     if not lines:
         issues.empty_labels += 1
-        return set(), 0, Counter(), False
+        return set(), 0, Counter(), False, []
 
     class_ids: set[int] = set()
     box_counts: Counter = Counter()
+    size_records: list[tuple[int, float, float, float, float]] = []
     valid_rows = 0
     for line_number, line in enumerate(lines, start=1):
         fields = line.split()
@@ -171,7 +176,9 @@ def _parse_label_file(
         if not valid_coordinates:
             issues.invalid_coordinates += 1
             _record_detail(issues, f"{label_path}:{line_number}: invalid normalized coordinates")
-    return class_ids, valid_rows, box_counts, True
+        else:
+            size_records.append((class_id, x, y, width, height))
+    return class_ids, valid_rows, box_counts, True, size_records
 
 
 def analyze_split(
@@ -223,13 +230,18 @@ def analyze_split(
         if label_path is None:
             category = "none"
         else:
-            class_ids, row_count, box_counts, has_content = _parse_label_file(
+            class_ids, row_count, box_counts, has_content, size_records = _parse_label_file(
                 label_path, known_classes, result.issues, split_name
             )
             category = _classify(class_ids, fire_id=fire_id, smoke_id=smoke_id, has_content=has_content)
             result.total_boxes += row_count
             result.boxes_by_class.update(box_counts)
+            for class_id, _, _, width, height in size_records:
+                result.box_sizes_by_class.setdefault(class_id, []).append(
+                    (width, height, width * height)
+                )
         result.categories[category] += 1
+        result.category_by_image[image_path] = category
         if progress_every and (index % progress_every == 0 or index == len(result.images)):
             print(f"Analyzed {index} / {len(result.images)} {split_name} images...", flush=True)
     if not result.images:
@@ -243,24 +255,9 @@ def classify_training_images(
     labels_dir_name: str,
     classes: dict[int, str],
 ) -> dict[str, list[Path]]:
-    images_root = Path(analysis.split_root) / images_dir_name
-    labels_root = Path(analysis.split_root) / labels_dir_name
-    label_by_key = {
-        path.relative_to(labels_root).as_posix(): path for path in analysis.labels
-    } if labels_root.is_dir() else {}
-    fire_id = next((class_id for class_id, name in classes.items() if name.strip().lower() == "fire"), None)
-    smoke_id = next((class_id for class_id, name in classes.items() if name.strip().lower() == "smoke"), None)
-    known_classes = set(classes)
     entries = {category: [] for category in CATEGORIES}
     for image_path in analysis.images:
-        label_path = label_by_key.get(_relative_key(image_path, images_root))
-        if label_path is None:
-            category = "none"
-        else:
-            class_ids, _, _, has_content = _parse_label_file(
-                label_path, known_classes, ValidationIssues(), analysis.name
-            )
-            category = _classify(class_ids, fire_id=fire_id, smoke_id=smoke_id, has_content=has_content)
+        category = analysis.category_by_image.get(image_path, "none")
         entries[category].append(image_path)
     return entries
 
@@ -289,6 +286,43 @@ def build_manifest(entries: dict[str, list[Path]], strategy: str, seed: int) -> 
 
 def _percent(value: int, total: int) -> float:
     return round((value / total) * 100, 2) if total else 0.0
+
+
+def _size_row(values: list[tuple[float, float, float]]) -> dict[str, Any]:
+    if not values:
+        return {
+            "size_box_count": 0,
+            "width_mean": 0.0,
+            "width_median": 0.0,
+            "width_min": 0.0,
+            "width_max": 0.0,
+            "height_mean": 0.0,
+            "height_median": 0.0,
+            "height_min": 0.0,
+            "height_max": 0.0,
+            "area_mean": 0.0,
+            "area_median": 0.0,
+            "area_min": 0.0,
+            "area_max": 0.0,
+        }
+    widths = [value[0] for value in values]
+    heights = [value[1] for value in values]
+    areas = [value[2] for value in values]
+    return {
+        "size_box_count": len(values),
+        "width_mean": round(statistics.mean(widths), 6),
+        "width_median": round(statistics.median(widths), 6),
+        "width_min": round(min(widths), 6),
+        "width_max": round(max(widths), 6),
+        "height_mean": round(statistics.mean(heights), 6),
+        "height_median": round(statistics.median(heights), 6),
+        "height_min": round(min(heights), 6),
+        "height_max": round(max(heights), 6),
+        "area_mean": round(statistics.mean(areas), 6),
+        "area_median": round(statistics.median(areas), 6),
+        "area_min": round(min(areas), 6),
+        "area_max": round(max(areas), 6),
+    }
 
 
 def _csv_write(path: Path, fieldnames: list[str], rows: Iterable[dict[str, Any]]) -> None:
@@ -323,6 +357,7 @@ def write_outputs(
     dataset_rows: list[dict[str, Any]] = []
     category_rows: list[dict[str, Any]] = []
     class_rows: list[dict[str, Any]] = []
+    size_rows: list[dict[str, Any]] = []
     for split in SPLITS:
         result = split_results[split]
         dataset_rows.append(
@@ -369,10 +404,20 @@ def write_outputs(
                     "percentage_of_boxes": _percent(result.boxes_by_class[unknown_id], result.total_boxes),
                 }
             )
+        size_class_ids = sorted(set(classes) | set(result.box_sizes_by_class))
+        for class_id in size_class_ids:
+            size_row = {
+                "split": split,
+                "class_id": class_id,
+                "class_name": classes.get(class_id, f"unknown:{class_id}"),
+            }
+            size_row.update(_size_row(result.box_sizes_by_class.get(class_id, [])))
+            size_rows.append(size_row)
 
     _csv_write(output_dir / "dataset_summary.csv", list(dataset_rows[0]), dataset_rows)
     _csv_write(output_dir / "category_summary.csv", list(category_rows[0]), category_rows)
     _csv_write(output_dir / "class_summary.csv", list(class_rows[0]), class_rows)
+    _csv_write(output_dir / "size_summary.csv", list(size_rows[0]), size_rows)
     (output_dir / "balanced_train.txt").write_text(
         "".join(f"{path.resolve()}\n" for path in manifest), encoding="utf-8"
     )
@@ -395,6 +440,10 @@ def write_outputs(
                 "total_bounding_boxes": result.total_boxes,
                 "categories": {category: result.categories[category] for category in CATEGORIES},
                 "boxes_by_class": {str(class_id): count for class_id, count in result.boxes_by_class.items()},
+                "object_sizes_normalized": {
+                    str(class_id): _size_row(values)
+                    for class_id, values in result.box_sizes_by_class.items()
+                },
                 "validation": asdict(result.issues),
             }
             for split, result in split_results.items()
@@ -433,6 +482,14 @@ def write_outputs(
                 "",
                 "Bounding Boxes:",
                 *[f"{name + ':':18}{result.boxes_by_class[class_id]}" for class_id, name in sorted(classes.items())],
+                "",
+                "Object Sizes (normalized width, height, and area):",
+                *[
+                    f"{name + ':':18}"
+                    f"n={_size_row(result.box_sizes_by_class.get(class_id, []))['size_box_count']} "
+                    f"mean area={_size_row(result.box_sizes_by_class.get(class_id, []))['area_mean']}"
+                    for class_id, name in sorted(classes.items())
+                ],
                 "",
                 "Validation:",
                 f"Missing labels:   {result.issues.images_missing_labels}",

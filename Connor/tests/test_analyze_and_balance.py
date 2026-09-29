@@ -90,6 +90,7 @@ class AnalyzerTests(unittest.TestCase):
             "dataset_summary.csv",
             "category_summary.csv",
             "class_summary.csv",
+            "size_summary.csv",
             "validation_report.txt",
             "balanced_train.txt",
             "dataset_summary.json",
@@ -97,6 +98,14 @@ class AnalyzerTests(unittest.TestCase):
             self.assertTrue((output / filename).is_file(), filename)
         self.assertEqual((self.images / "fire.jpg").read_bytes(), original_image)
         self.assertEqual((self.labels / "fire.txt").read_bytes(), original_label)
+
+    def test_normalized_size_statistics(self):
+        self.add("fire", "0 0.5 0.5 0.2 0.4\n")
+        result = analyze_split("train", self.root / "train", "images", "labels", self.classes, 0)
+        width, height, area = result.box_sizes_by_class[0][0]
+        self.assertAlmostEqual(width, 0.2)
+        self.assertAlmostEqual(height, 0.4)
+        self.assertAlmostEqual(area, 0.08)
 
 
 if __name__ == "__main__":
