@@ -67,6 +67,9 @@ measure of real variety, not a count of unique files.
    D-Fire. 20 duplicate pairs match a D-Fire *fire and smoke* image to an azimjaan21 image
    labeled fire only.
    Training on them as-is teaches the model that visible smoke is background.
+   Part of the cause: **714 images are stored twice as byte-identical files**, once with only
+   fire boxes and once with only smoke boxes. Combining the copies recovers 714 correct
+   fire-and-smoke images. The other 3,202 fire-only images have no smoke copy.
 5. **Some cloud/glare negatives may contain fire.** 12 cloud-only images (2 at the strict
    threshold) match D-Fire images that do have fire or smoke boxes. They need a manual look
    before we trust all 8,822 negatives.
@@ -91,7 +94,8 @@ measure of real variety, not a count of unique files.
 1. **Build new train/val/test splits by duplicate group, across all datasets.** Don't reuse the
    published splits. Every image already has a group id at both thresholds. Use the strict
    groups at minimum; the loose groups are safer for evaluation.
-2. **Drop exact duplicates:** the 715 azimjaan21 files and 1 AI For Mankind file. Keep one copy per group.
+2. **Combine exact duplicates** (716 files) into one image each, merging their boxes, rather than
+   just dropping copies. Done in the merged dataset.
 3. **Fix boxes when writing training labels:**
    - clip the 369 off-image boxes
    - drop the 23 zero-area boxes and the 114:1 box
@@ -105,6 +109,36 @@ measure of real variety, not a count of unique files.
    Group its sequences so one camera is never in both train and test.
 6. **Close the flare-stack gap** with site or look-alike footage kept outside this public repo,
    plus more night-time data.
+
+## Merged dataset (built 2026-09-30)
+
+Built by `scripts/build_merged.py` (`jobs/merge.slurm`) as a YOLO folder of symlinked images and
+new labels, with nothing copied from raw data. Ultralytics config: `outputs/merged/data.yaml` on Grace.
+
+- **Included:**
+  - all of D-Fire
+  - all of AI For Mankind (team decision to train on it; license still to be confirmed)
+  - azimjaan21 smoke images, cloud/glare negatives, and the 714 recovered fire-and-smoke images
+- **Left out:** 3,202 azimjaan21 fire-only images (smoke unlabeled).
+- **Identical copies:** 716 combined into one image each, with boxes merged.
+- **Box fixes:**
+  - 329 boxes clipped to the image
+  - 19 zero-area or fully-outside boxes dropped
+  - 6 boxes under 1 px dropped
+- **Splits:** new 70 / 15 / 15, assigned per loose duplicate group (pHash ≤5), balanced per
+  dataset. 0 groups straddle splits.
+
+| | Train | Val | Test | Total |
+|---|---|---|---|---|
+| D-Fire | 15,069 | 3,220 | 3,238 | 21,527 |
+| azimjaan21 | 9,549 | 2,049 | 2,046 | 13,644 |
+| AI For Mankind | 1,535 | 335 | 320 | 2,190 |
+| **Total images** | **26,153** | **5,604** | **5,604** | **37,361** |
+| Fire / smoke boxes | 10,641 / 13,654 | 2,134 / 3,166 | 2,924 / 3,090 | |
+
+**Known weakness:** splits are balanced per dataset but not per category. Test holds 26% of the
+fire-only images and 21% of the fire-and-smoke images, because D-Fire fire images come in large
+duplicate groups. A category-aware pass would even this out before serious training runs.
 
 ## Method notes and caveats
 
