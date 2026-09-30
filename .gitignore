@@ -1,0 +1,28 @@
+# Data and model files - never commit
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.mp4
+*.zip
+*.tar*
+*.pt
+*.onnx
+*.npy
+datasets/
+data/
+raw/
+runs/
+outputs/
+*.cache
+
+# Environments / secrets
+venv/
+*venv/
+.env
+*.key
+__pycache__/
+
+# Slurm job logs (folder kept via .gitkeep)
+logs/*
+!logs/.gitkeep
