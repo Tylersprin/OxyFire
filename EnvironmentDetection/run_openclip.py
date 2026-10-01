@@ -51,26 +51,30 @@ def main(data_dir, output_csv, batch_size, num_workers, device_name):
     ]
     
     factors = [
-        "lens glare or bright glare", 
-        "cloudy sky", 
-        "heavy fog or mist", 
+        "lens glare or bright glare",
+        "cloudy sky",
+        "heavy fog or mist",
         "smoke or haze",
         "snow covered ground"
     ]
 
     biome_prompts = [f"a photo of a {b}" for b in biomes]
     factor_prompts = [f"a photo with {f}" for f in factors]
+    factor_absent_prompts = [f"a photo without {f}" for f in factors]
 
     # 3. Pre-encode Text Embeddings
     with torch.no_grad():
         b_tokens = tokenizer(biome_prompts).to(device)
         f_tokens = tokenizer(factor_prompts).to(device)
+        f_absent_tokens = tokenizer(factor_absent_prompts).to(device)
         
         biome_text_feats = model.encode_text(b_tokens)
         factor_text_feats = model.encode_text(f_tokens)
+        factor_absent_text_feats = model.encode_text(f_absent_tokens)
         
         biome_text_feats /= biome_text_feats.norm(dim=-1, keepdim=True)
         factor_text_feats /= factor_text_feats.norm(dim=-1, keepdim=True)
+        factor_absent_text_feats /= factor_absent_text_feats.norm(dim=-1, keepdim=True)
 
     # 4. Gather Images
     valid_exts = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
@@ -102,9 +106,13 @@ def main(data_dir, output_csv, batch_size, num_workers, device_name):
             # Cosine Similarities (scaled by 100 as per CLIP standard)
             biome_logits = 100.0 * (img_feats @ biome_text_feats.T)
             factor_logits = 100.0 * (img_feats @ factor_text_feats.T)
+            factor_absent_logits = 100.0 * (img_feats @ factor_absent_text_feats.T)
 
             biome_probs = biome_logits.softmax(dim=-1)
-            factor_probs = factor_logits.sigmoid()
+            factor_pair_logits = torch.stack(
+                (factor_logits, factor_absent_logits), dim=-1
+            )
+            factor_probs = factor_pair_logits.softmax(dim=-1)[..., 0]
 
             for i in range(len(paths)):
                 if not valid_flags[i]:
@@ -117,9 +125,9 @@ def main(data_dir, output_csv, batch_size, num_workers, device_name):
                 assigned_biome = biomes[top_biome_idx]
                 biome_confidence = round(biome_probs[i][top_biome_idx].item(), 3)
 
-                # Multi-label environmental factor thresholds (> 0.35 probability)
+                # Each factor competes against its explicit absence prompt.
                 detected_factors = {
-                    f: bool(factor_probs[i][j].item() > 0.35) 
+                    f: bool(factor_probs[i][j].item() > 0.5)
                     for j, f in enumerate(factors)
                 }
 
