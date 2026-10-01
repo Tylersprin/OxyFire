@@ -1,0 +1,24 @@
+Using device: cuda
+Loading OpenCLIP model (ViT-B-32 / laion2b_s34b_b79k)...
+Found 14122 images in '/scratch/user/vincentconlee/datasets/data/train/images'.
+Running inference...
+
+Saved results to: /scratch/user/vincentconlee/environment_data/kaggle-environment-19922050.csv
+
+=== Biome Distribution ===
+primary_biome
+residential or urban zone      5847
+industrial site or facility    3762
+grassland or savanna           2186
+agricultural field              867
+boreal forest or woodland       739
+tundra or arctic landscape      721
+Name: count, dtype: int64
+
+=== Environmental Factor Counts ===
+lens glare or bright glare    2244
+cloudy sky                     867
+heavy fog or mist              395
+smoke or haze                 7016
+snow covered ground             21
+dtype: int64
