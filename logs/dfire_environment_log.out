@@ -1,0 +1,24 @@
+Using device: cuda
+Loading OpenCLIP model (ViT-B-32 / laion2b_s34b_b79k)...
+Found 17221 images in '/scratch/user/vincentconlee/datasets/D-Fire/train/images'.
+Running inference...
+
+Saved results to: /scratch/user/vincentconlee/environment_data/DFire.csv
+
+=== Biome Distribution ===
+primary_biome
+residential or urban zone      7074
+industrial site or facility    4606
+grassland or savanna           2663
+agricultural field             1058
+boreal forest or woodland       928
+tundra or arctic landscape      892
+Name: count, dtype: int64
+
+=== Environmental Factor Counts ===
+lens glare or bright glare    2717
+cloudy sky                    1061
+heavy fog or mist              484
+smoke or haze                 8581
+snow covered ground             28
+dtype: int64
