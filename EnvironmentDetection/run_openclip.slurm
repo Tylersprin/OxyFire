@@ -22,6 +22,7 @@ cd "$PROJECT_DIR"
 source "$VENV_DIR/bin/activate"
 export HF_HOME="${HF_HOME:-$SCRATCH/huggingface-cache}"
 export TRANSFORMERS_CACHE="$HF_HOME"
+export HF_HUB_OFFLINE=1
 
 python EnvironmentDetection/run_openclip.py \
     --data_dir "$DATA_DIR" \
