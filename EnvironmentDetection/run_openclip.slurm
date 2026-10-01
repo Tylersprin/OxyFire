@@ -13,7 +13,7 @@ set -euo pipefail
 
 PROJECT_DIR="${PROJECT_DIR:-$SCRATCH/OxyFireRepo}"
 DATA_DIR="${DATA_DIR:-$SCRATCH/datasets/data/train/images}"
-OUTPUT_CSV="${OUTPUT_CSV:-$SCRATCH/kaggle-environment-${SLURM_JOB_ID}.csv}"
+OUTPUT_CSV="${OUTPUT_CSV:-$SCRATCH/environment_data/kaggle-environment-${SLURM_JOB_ID}.csv}"
 VENV_DIR="${VENV_DIR:-$SCRATCH/venvs/openclip}"
 
 mkdir -p "$PROJECT_DIR/logs" "$(dirname "$OUTPUT_CSV")" "$VENV_DIR" "$SCRATCH/huggingface-cache"
