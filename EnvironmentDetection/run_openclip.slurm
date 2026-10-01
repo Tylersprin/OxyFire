@@ -19,14 +19,6 @@ VENV_DIR="${VENV_DIR:-$SCRATCH/venvs/openclip}"
 mkdir -p "$PROJECT_DIR/logs" "$(dirname "$OUTPUT_CSV")" "$VENV_DIR" "$SCRATCH/huggingface-cache"
 cd "$PROJECT_DIR"
 
-if [[ ! -x "$VENV_DIR/bin/python" ]]; then
-    python -m venv "$VENV_DIR"
-    "$VENV_DIR/bin/python" -m pip install --upgrade pip
-    # Install torch/torchvision using the wheel index that matches the loaded CUDA module.
-    "$VENV_DIR/bin/pip" install torch torchvision
-    "$VENV_DIR/bin/pip" install -r requirements.txt
-fi
-
 source "$VENV_DIR/bin/activate"
 export HF_HOME="${HF_HOME:-$SCRATCH/huggingface-cache}"
 export TRANSFORMERS_CACHE="$HF_HOME"
