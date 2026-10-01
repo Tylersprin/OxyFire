@@ -21,7 +21,7 @@ cd "$PROJECT_DIR"
 
 # Select versions available on Grace with `module spider Python` and `module spider CUDA`.
 module purge
-module load Python/3.8.2 CUDA/11.0.2
+module module load GCCcore/15.2.0 Python/3.14.2 CUDA/12.9.0
 
 if [[ ! -x "$VENV_DIR/bin/python" ]]; then
     python -m venv "$VENV_DIR"
