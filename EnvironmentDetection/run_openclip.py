@@ -47,7 +47,8 @@ def main(data_dir, output_csv, batch_size, num_workers, device_name):
         "tundra or arctic landscape", 
         "grassland or savanna", 
         "residential or urban zone",
-        "agricultural field"
+        "agricultural field",
+        "indiscernable"
     ]
     
     factors = [
@@ -55,7 +56,8 @@ def main(data_dir, output_csv, batch_size, num_workers, device_name):
         "cloudy sky",
         "heavy fog or mist",
         "smoke or haze",
-        "snow covered ground"
+        "snow covered ground",
+        "nighttime"
     ]
 
     biome_prompts = [f"a photo of a {b}" for b in biomes]
