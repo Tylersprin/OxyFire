@@ -47,8 +47,7 @@ def main(data_dir, output_csv, batch_size, num_workers, device_name):
         "tundra or arctic landscape", 
         "grassland or savanna", 
         "residential or urban zone",
-        "agricultural field",
-        "indiscernable"
+        "agricultural field"
     ]
     
     factors = [
