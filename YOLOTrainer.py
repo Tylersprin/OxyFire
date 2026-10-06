@@ -1,29 +1,36 @@
 from ultralytics import YOLO
-import albumentations as A
+# import albumentations as A
+import shutil
 
 if __name__ == "__main__":
-    # Model 26, x indicates extra large sixe ~10-15 ms per image, cle sets to classify
+    # Cleaning out folder from previous runs
+    print("cleaning out folder")
+    shutil.rmtree("runs/detect")
+
     print("Loading model")
-    model = YOLO('yolo26x.pt')
-    # Add other augmentations here, these set the bounding box out of bounds so don't use them
+    models = [YOLO('pretrained_models/yolo26n.pt'), YOLO('pretrained_models/yolo26s.pt'), YOLO('pretrained_models/yolo26m.pt'), YOLO('pretrained_models/yolo26l.pt'), YOLO('pretrained_models/yolo26x.pt')]
+    names = ['Nano', 'Small', 'Medium', 'Large', 'Extra Large']
     # custom_transforms = [
     #     A.Blur(blur_limit=7, p=0.5),
     #     A.CLAHE(clip_limit=4.0, p=0.5),
     # ]
-    print("Training Model")
-    # Do not change image size, epochs is passes over the data
-    model.train(
-        data="dataset",
-        epochs=5,
-        # augmentations=custom_transforms,
-        imgsz=640,
-    )
-    print("Model Statistics")
-    # Print statistics
-    metrics = model.val(data="dataset")
-    print(metrics.box.map)
-    print("Saving model")
 
-    # fix file path to run yourself
-    model = YOLO('/scratch/user/tylersprin/runs/detect/train-5/weights/best.pt')
-    model.save('/OxyFire.pt')
+    # imgsz cannot be changed, epochs is iterations over data for training
+    count = 0
+    for model in models:
+        print("Training " + names[count] + " Model")
+        model.train(
+            data="dataset",
+            epochs=200,
+            imgsz=640,
+            optimizer="AdamW"
+        )
+
+        print(names[count] + " Model Statistics")
+        metrics = model.val(data="dataset", plots=True)
+        print(metrics.box.maps)
+
+        print("Saving model")
+        model = YOLO('runs/detect/train/weights/best.pt')
+        model.save(names[count] + 'YOLOOxyFire.pt')
+        count += 1
