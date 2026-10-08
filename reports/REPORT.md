@@ -1,6 +1,7 @@
 # Public fire/smoke datasets: data-quality report
 
-Generated 2026-09-30 from the combined manifest (41,279 images, 50,775 boxes).
+Generated 2026-09-30 from the combined manifest (41,279 images, 50,775 boxes). Updated 2026-10-08
+with datasets that are not merged yet (see the last sections).
 Scripts: `scripts/build_manifest.py`, `scripts/class_check.py`, `scripts/quality_stats.py`
 (Slurm: `jobs/manifest.slurm`, `jobs/quality.slurm`). Full tables and plots are in
 `$SCRATCH/oxyfire_data/outputs/report/` on Grace. They are not in the repo because they contain file paths.
@@ -12,8 +13,8 @@ Box classes are unified to **fire = 0, smoke = 1**. Each image also gets a categ
 
 | Dataset | Recommendation | Why |
 |---|---|---|
-| **D-Fire** | **Keep. Core training set.** Clean boxes and re-split. | Largest, CC0, realistic mix of fire, smoke, both and background, 18% dark images. Its own train/val/test splits leak near-duplicate frames. |
-| **AI For Mankind v2** | **Keep for evaluation only, if the license allows.** Don't train on it yet. | Only source of distant, small wildfire smoke. But it's about 300 distinct scenes rather than 2,191 images, daytime only, has no negatives, and is licensed non-commercial ShareAlike. |
+| **D-Fire** | **Keep. Core training set.** Clean boxes and re-split. | Largest, realistic mix of fire, smoke, both and background, 18% dark images. Its own train/val/test splits leak near-duplicate frames. |
+| **AI For Mankind v2** | **Keep, but don't overweight it.** In the merged set (team decision). | Only source of distant, small wildfire smoke. But it's about 300 distinct scenes rather than 2,191 images, daytime only, and has no negatives. |
 | **azimjaan21** | **Clean before use.** Use its cloud/glare negatives and smoke images now. Hold its fire-only images until they're relabeled. | Undocumented class ids (resolved below). Fire images are missing smoke labels. It has 715 exact duplicate files and augmented copies that leak across its splits. Its 8,822 cloud/glare negatives are the most useful false-alarm data we have. |
 
 None of the datasets contain flare stacks, which remain the main false-positive risk for industrial sites. That gap needs its own data.
@@ -25,7 +26,6 @@ None of the datasets contain flare stacks, which remain the main false-positive 
 | Images | 21,527 | 2,191 | 17,561 | 41,279 |
 | Label format | YOLO | Pascal VOC | YOLO (some polygons) | – |
 | Original splits (train / val / test) | 14,122 / 3,099 / 4,306 | none | 11,035 / 3,260 / 3,266 | – |
-| License | CC0 | CC BY-NC-SA 4.0 | CDLA-Permissive 1.0 (image provenance undocumented) | – |
 | Fire / smoke boxes | 14,692 / 11,865 | 0 / 2,317 | 5,562 / 5,745 | 20,254 / 19,927 |
 | Images: fire / smoke / both / neither | 5% / 27% / 22% / 46% | 0% / 100% / 0% / 0% | 22% / 27% / **0%** / 50% | 12% / 31% / 11% / 45% |
 | Small boxes, COCO <32² px (fire / smoke) | 31% / 4% | – / **61%** | 17% / 2% | – |
@@ -104,9 +104,7 @@ measure of real variety, not a count of unique files.
    - Use its smoke images and cloud/glare negatives now.
    - For fire-only images, either add smoke labels (best) or leave them out of training.
    - Review the 12 flagged cloud images before using the negatives.
-5. **AI For Mankind:** get a decision on the non-commercial license first. If it can't be used
-   commercially, use it only as an internal benchmark for distant smoke, not as training data.
-   Group its sequences so one camera is never in both train and test.
+5. **AI For Mankind:** group its sequences so one camera is never in both train and test.
 6. **Close the flare-stack gap** with site or look-alike footage kept outside this public repo,
    plus more night-time data.
 
@@ -117,7 +115,7 @@ new labels, with nothing copied from raw data. Ultralytics config: `outputs/merg
 
 - **Included:**
   - all of D-Fire
-  - all of AI For Mankind (team decision to train on it; license still to be confirmed)
+  - all of AI For Mankind (team decision to train on it)
   - azimjaan21 smoke images, cloud/glare negatives, and the 714 recovered fire-and-smoke images
 - **Left out:** 3,202 azimjaan21 fire-only images (smoke unlabeled).
 - **Identical copies:** 716 combined into one image each, with boxes merged.
@@ -152,5 +150,32 @@ duplicate groups. A category-aware pass would even this out before serious train
 - Brightness is a rough day/night proxy (mean gray level); it doesn't detect night directly.
 - The azimjaan21 class meaning comes from strong evidence (color stats, a visual spot check and
   cross-dataset agreement), not from the author. Id 0 in particular deserves a larger review.
-- FiSmo (dsw2017) was excluded because it has image-level labels only, with no bounding boxes.
-  DataCluster Labs was not included.
+
+## Fire coverage in the merged set
+
+Fire is present, but **fire-only images are scarce**:
+
+| | Images | Share of 37,361 |
+|---|---|---|
+| Any fire (fire only + fire and smoke) | 6,536 | 17% |
+| Fire only | 1,164 | 3% |
+| Fire and smoke | 5,372 | 14% |
+| Smoke only | 12,166 | 33% |
+| Neither (negatives) | 18,659 | 50% |
+
+Fire boxes: 15,699. Smoke boxes: 19,910. Half the images are negatives, which helps against
+false alarms but means fire recall should be watched closely in training. The datasets below are
+the main way to add fire.
+
+## Datasets not yet merged
+
+| Dataset | Status | Images | Classes | Notes |
+|---|---|---|---|---|
+| **roscoekerby** (Kaggle `roscoekerby/firesmoke-detection-yolo-v9`) | **Next to add.** Downloaded; extraction being redone. | 42,842, but only **~7,551 distinct originals** | fire, smoke | Roboflow export with up to 148 augmented copies per original. We will keep **one image per original**. Includes industrial fire video frames. |
+| **ironwolf437** (Kaggle `ironwolf437/fire-detection-dataset`) | **Candidate, not yet downloaded.** | 17,344 (no augmentation, per its readme) | fire, light, nonfire, smoke | Roboflow export from surveillance footage; its description mentions indoor kitchen scenes. `light` (lamps, reflections) would be kept as hard negatives, like azimjaan21's cloud/glare. Needs the same class, duplicate and quality checks before merging. |
+| FiSmo (dsw2017) | Excluded | – | – | Image-level labels only, no boxes. |
+| metinmekiabullrahman/fire-detection | Excluded | ~2,500 | fire | Smoke unlabeled; low-resolution video frames. |
+| DataCluster Labs | Not evaluated | – | – | |
+
+Image counts for roscoekerby and ironwolf437 come from their published metadata, not from our
+own checks yet. Neither contains flare stacks, so that gap remains.
